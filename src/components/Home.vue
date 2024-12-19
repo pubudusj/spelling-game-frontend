@@ -4,6 +4,7 @@ import { ref } from 'vue'
 const words = ref([])
 const isLoading = ref(false)
 const baseUrl = 'https://ubqh4412yg.execute-api.eu-central-1.amazonaws.com/prod/'
+const selectedLanguage = ref('')  // To store selected language
 
 const fetchWords = async (language) => {
   isLoading.value = true
@@ -26,7 +27,70 @@ const fetchWords = async (language) => {
 }
 
 const handleLanguageSelect = (language) => {
+  selectedLanguage.value = language
   fetchWords(language)
+}
+
+const handleAudioError = (event) => {
+  console.error('Error loading audio:', event)
+}
+
+const handleInput = (event, index, wordId) => {
+  const inputs = event.target.parentElement.getElementsByTagName('input')
+  if (event.target.value.length >= 1) {
+    // Move to next input if available
+    if (index < inputs.length) {
+      inputs[index]?.focus()
+    }
+  } else if (event.key === 'Backspace' && index > 1) {
+    // Move to previous input on backspace
+    inputs[index - 2]?.focus()
+  }
+}
+
+const enforceMaxLength = (input) => {
+  if (input.value.length > 1) {
+    input.value = input.value.slice(0, 1)
+  }
+}
+
+// Function to collect answers from inputs
+const collectAnswers = () => {
+  return words.value.map(word => {
+    const inputContainer = document.querySelector(`[data-word-id="${word.id}"]`)
+    const inputs = inputContainer?.getElementsByTagName('input')
+    const letters = inputs ? Array.from(inputs).map(input => input.value).join('') : ''
+    
+    return {
+      id: word.id,
+      word: letters
+    }
+  })
+}
+
+// Function to handle form submission
+const handleSubmit = async () => {
+  const answers = collectAnswers()
+  const payload = {
+    language: selectedLanguage.value,
+    answers: answers
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}answers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+    const data = await response.json()
+    console.log('Submission response:', data)
+    // Handle success (you can add appropriate UI feedback here)
+  } catch (error) {
+    console.error('Error submitting answers:', error)
+    // Handle error (you can add appropriate UI feedback here)
+  }
 }
 </script>
 
@@ -61,7 +125,41 @@ const handleLanguageSelect = (language) => {
     <div v-if="words.length > 0" class="words-list">
       <div v-for="word in words" :key="word.id" class="word-item">
         <p>{{ word.description }}</p>
-        <p>Characters: {{ word.character_count }}</p>
+        <p>Characters: {{ word.charcount }}</p>
+
+        <div class="audio-container">
+          <audio
+            :src="word.url"
+            controls
+            class="audio-player"
+            @error="handleAudioError"
+          >
+            Your browser does not support the audio element.
+          </audio>
+          
+          <div class="input-container" :data-word-id="word.id">
+            <input
+              v-for="index in word.charcount"
+              :key="index"
+              type="text"
+              maxlength="1"
+              class="letter-input"
+              @keyup="handleInput($event, index, word.id)"
+              @input="enforceMaxLength($event.target)"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Single submit button outside the word loop -->
+      <div class="submit-container">
+        <button 
+          class="submit-btn"
+          @click="handleSubmit"
+          :disabled="isLoading"
+        >
+          Submit Answers
+        </button>
       </div>
     </div>
   </div>
@@ -123,9 +221,67 @@ const handleLanguageSelect = (language) => {
 }
 
 .word-item {
-  background-color: #f5f5f5;
+  background-color: #525252;
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 8px;
+}
+
+.audio-container {
+  margin: 1rem 0;
+}
+
+.audio-player {
+  width: 100%;
+  max-width: 300px;
+  height: 40px;
+  border-radius: 4px;
+}
+
+.input-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.letter-input {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.2rem;
+  border: 2px solid #42b883;
+  border-radius: 4px;
+  outline: none;
+}
+
+.letter-input:focus {
+  border-color: #3aa876;
+  box-shadow: 0 0 5px rgba(66, 184, 131, 0.5);
+}
+.submit-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.submit-btn {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #42b883;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #3aa876;
+}
+
+.submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 </style>
