@@ -5,7 +5,9 @@ const words = ref([])
 const isLoading = ref(false)
 const baseUrl = 'https://ubqh4412yg.execute-api.eu-central-1.amazonaws.com/prod/'
 const selectedLanguage = ref('')  // To store selected language
-
+const results = ref([])
+const isSubmitted = ref(false)
+console.log(results)
 const fetchWords = async (language) => {
   isLoading.value = true
   try {
@@ -75,7 +77,7 @@ const handleSubmit = async () => {
     language: selectedLanguage.value,
     answers: answers
   }
-
+  isSubmitted.value = true
   try {
     const response = await fetch(`${baseUrl}answers`, {
       method: 'POST',
@@ -85,11 +87,9 @@ const handleSubmit = async () => {
       body: JSON.stringify(payload)
     })
     const data = await response.json()
-    console.log('Submission response:', data)
-    // Handle success (you can add appropriate UI feedback here)
+    results.value = data
   } catch (error) {
     console.error('Error submitting answers:', error)
-    // Handle error (you can add appropriate UI feedback here)
   }
 }
 </script>
@@ -136,8 +136,12 @@ const handleSubmit = async () => {
           >
             Your browser does not support the audio element.
           </audio>
-          
-          <div class="input-container" :data-word-id="word.id">
+        </div>
+          <div class="input-container" :data-word-id="word.id" :class="{
+            'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
+            'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
+          }">
+            <div class="input-container" :data-word-id="word.id">
             <input
               v-for="index in word.charcount"
               :key="index"
@@ -146,7 +150,14 @@ const handleSubmit = async () => {
               class="letter-input"
               @keyup="handleInput($event, index, word.id)"
               @input="enforceMaxLength($event.target)"
+              :disabled="isSubmitted"
             >
+            <span v-if="isSubmitted" class="result-text">
+              {{ results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
+              <span class="original-word" v-if="!results.find(r => r.id === word.id)?.correct">
+                ({{ results.find(r => r.id === word.id)?.original_word }})
+              </span>
+            </span>
           </div>
         </div>
       </div>
@@ -154,12 +165,12 @@ const handleSubmit = async () => {
       <!-- Single submit button outside the word loop -->
       <div class="submit-container">
         <button 
-          class="submit-btn"
-          @click="handleSubmit"
-          :disabled="isLoading"
-        >
-          Submit Answers
-        </button>
+            class="submit-btn"
+            @click="handleSubmit"
+            :disabled="isLoading || isSubmitted"
+          >
+            {{ isSubmitted ? 'Submitted' : 'Submit Answers' }}
+          </button>
       </div>
     </div>
   </div>
@@ -284,4 +295,39 @@ const handleSubmit = async () => {
     background-color: #ccc;
     cursor: not-allowed;
 }
+
+.input-container.correct .letter-input {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-color: #4CAF50;
+}
+
+.input-container.incorrect .letter-input {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-color: #F44336;
+}
+
+.letter-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.result-text {
+  margin-left: 1rem;
+  font-weight: bold;
+}
+
+.input-container.correct .result-text {
+  color: #4CAF50;
+}
+
+.input-container.incorrect .result-text {
+  color: #F44336;
+}
+
+.original-word {
+  font-style: italic;
+  margin-left: 0.5rem;
+  font-weight: normal;
+}
+
 </style>
