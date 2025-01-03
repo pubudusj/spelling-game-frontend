@@ -7,7 +7,26 @@ const baseUrl = 'https://ubqh4412yg.execute-api.eu-central-1.amazonaws.com/prod/
 const selectedLanguage = ref('')  // To store selected language
 const results = ref([])
 const isSubmitted = ref(false)
-console.log(results)
+const timeRemaining = ref(null)
+const timer = ref(null)
+const TIME_PER_QUESTION = 10
+
+const startTimer = (questionCount) => {
+  // Allow seconds per question, max 90 seconds
+  const totalSeconds = Math.min(90, questionCount * TIME_PER_QUESTION)
+  timeRemaining.value = totalSeconds
+  
+  timer.value = setInterval(() => {
+    if (timeRemaining.value > 0) {
+      timeRemaining.value--
+    } else {
+      if (!isSubmitted.value) {
+        handleSubmit() // Auto-submit if not already submitted
+      }
+      clearInterval(timer.value)
+    }
+  }, 1000)
+}
 const fetchWords = async (language) => {
   isLoading.value = true
   try {
@@ -21,6 +40,7 @@ const fetchWords = async (language) => {
     })
     const data = await response.json()
     words.value = data['questions']
+    startTimer(data['questions'].length) // Start timer when questions are loaded
   } catch (error) {
     console.error('Error fetching words:', error)
   } finally {
@@ -30,6 +50,15 @@ const fetchWords = async (language) => {
 
 const handleLanguageSelect = (language) => {
   selectedLanguage.value = language
+  // Reset form state
+  isSubmitted.value = false
+  results.value = []
+  words.value = []
+  timeRemaining.value = null
+  if (timer.value) {
+    clearInterval(timer.value)
+    timer.value = null
+  }
   fetchWords(language)
 }
 
@@ -78,6 +107,7 @@ const handleSubmit = async () => {
     answers: answers
   }
   isSubmitted.value = true
+  clearInterval(timer.value) // Stop the timer when form is submitted
   try {
     const response = await fetch(`${baseUrl}answers`, {
       method: 'POST',
@@ -119,6 +149,11 @@ const handleSubmit = async () => {
     <!-- Display loading state -->
     <div v-if="isLoading" class="loading">
       Loading...
+    </div>
+    
+    <!-- Display timer -->
+    <div v-if="timeRemaining !== null" class="timer" :class="{ 'warning': timeRemaining < 30 }">
+      Time remaining: {{ Math.floor(timeRemaining / 60) }}:{{ (timeRemaining % 60).toString().padStart(2, '0') }}
     </div>
 
     <!-- Display words after API call -->
@@ -328,6 +363,27 @@ const handleSubmit = async () => {
   font-style: italic;
   margin-left: 0.5rem;
   font-weight: normal;
+}
+
+.timer {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background-color: #42b883;
+  color: white;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.timer.warning {
+  background-color: #ff4444;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
 }
 
 </style>
