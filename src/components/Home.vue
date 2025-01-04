@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import ResultOverlay from './ResultOverlay.vue'
 
 const words = ref([])
 const isLoading = ref(false)
@@ -10,6 +11,7 @@ const isSubmitted = ref(false)
 const timeRemaining = ref(null)
 const timer = ref(null)
 const TIME_PER_QUESTION = 10
+const showResultOverlay = ref(false)
 
 const startTimer = (questionCount) => {
   // Allow seconds per question, max 90 seconds
@@ -102,6 +104,7 @@ const handleSubmit = async () => {
     })
     const data = await response.json()
     results.value = data
+    showResultOverlay.value = true
   } catch (error) {
     console.error('Error submitting answers:', error)
   }
@@ -146,7 +149,10 @@ const handleSubmit = async () => {
 
       <!-- Display words after API call -->
       <div v-if="words.length > 0" class="words-list">
-        <div v-for="word in words" :key="word.id" class="word-item">
+        <div v-for="word in words" :key="word.id" class="word-item" :class="{
+            'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
+            'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct
+          }">
           <div class="audio-container">
             <audio
               :src="word.url"
@@ -157,7 +163,7 @@ const handleSubmit = async () => {
               Your browser does not support the audio element.
             </audio>
           </div>
-          <p>Meaning: {{ word.description }}</p>
+          <p><span class="meaning">Meaning:</span> {{ word.description }}</p>
             <div class="input-container" :data-word-id="word.id" :class="{
               'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
               'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
@@ -192,6 +198,12 @@ const handleSubmit = async () => {
         </div>
       </div>
     </div>
+    <ResultOverlay
+      :isVisible="showResultOverlay"
+      :totalQuestions="words.length"
+      :correctCount="results.filter(r => r.correct).length"
+      @close="showResultOverlay = false"
+    />
   </div>
 </template>
 
@@ -277,7 +289,15 @@ const handleSubmit = async () => {
   margin-left: auto;
   margin-right: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
+
+.word-item.correct {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.word-item.incorrect {
+  background-color: rgba(244, 67, 54, 0.1);
 }
 
 .word-item:hover {
@@ -395,6 +415,12 @@ const handleSubmit = async () => {
   animation: pulse 1s infinite;
 }
 
+/* Add style for the body when timer is in warning state */
+.questions-container:has(.timer.warning) {
+  background-color: #ffebee; /* Light red background */
+  transition: background-color 0.3s ease;
+}
+
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -406,5 +432,9 @@ const handleSubmit = async () => {
     top: 250px;
     left: 0;
     right: 0;
+}
+
+.meaning {
+  font-weight: bold;
 }
 </style>
