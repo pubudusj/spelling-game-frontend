@@ -136,13 +136,12 @@ const handleSubmit = async () => {
         Dutch
       </button>
     </div>
-
-    <!-- Display loading state -->
-    <div v-if="isLoading" class="loading">
-      Loading...
-    </div>
     
     <div class="questions-container">
+      <!-- Display loading state -->
+    <div v-if="isLoading" class="loading">
+      Generating questions...
+    </div>
       <!-- Display timer -->
       <div v-if="timeRemaining !== null" class="timer" :class="{ 'warning': timeRemaining < 30 }">
         Time remaining: {{ Math.floor(timeRemaining / 60) }}:{{ (timeRemaining % 60).toString().padStart(2, '0') }}
@@ -165,6 +164,7 @@ const handleSubmit = async () => {
             </audio>
           </div>
           <p><span class="meaning">Meaning:</span> {{ word.description }}</p>
+          <p><span class="charcount">Characters:</span> {{ word.charcount }}</p>
             <div class="input-container" :data-word-id="word.id" :class="{
               'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
               'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
@@ -273,6 +273,8 @@ const handleSubmit = async () => {
 .loading {
   margin-top: 1rem;
   color: #666;
+  text-align: center;
+  width: 100%;
 }
 
 .words-list {
@@ -342,7 +344,7 @@ const handleSubmit = async () => {
   box-shadow: 0 0 5px rgba(66, 184, 131, 0.5);
 }
 .submit-container {
-    margin-top: 2rem;
+    margin: 2rem;
     display: flex;
     justify-content: center;
 }
@@ -436,6 +438,10 @@ const handleSubmit = async () => {
 }
 
 .meaning {
+  font-weight: bold;
+}
+
+.charcount {
   font-weight: bold;
 }
 </style>
