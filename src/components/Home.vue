@@ -4,7 +4,8 @@ import ResultOverlay from './ResultOverlay.vue'
 
 const words = ref([])
 const isLoading = ref(false)
-const baseUrl = 'https://ubqh4412yg.execute-api.eu-central-1.amazonaws.com/prod/'
+// Use baseUrl from the environment variables
+const baseUrl = import.meta.env.VITE_API_BASE_URL
 const selectedLanguage = ref('')  // To store selected language
 const results = ref([])
 const isSubmitted = ref(false)
@@ -293,7 +294,7 @@ const handleSubmit = async () => {
 }
 
 .word-item.correct {
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: rgba(167, 249, 171, 0.5);
 }
 
 .word-item.incorrect {

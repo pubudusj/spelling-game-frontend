@@ -25,7 +25,7 @@ const emit = defineEmits(['close'])
         You got <span class="correct-count">{{ correctCount }}</span> out of 
         <span class="total-count">{{ totalQuestions }}</span> questions correct!
       </p>
-      <button class="close-btn" @click="$emit('close')">Close</button>
+      <button class="close-btn" @click="$emit('close')">View Results</button>
     </div>
   </div>
 </template>
