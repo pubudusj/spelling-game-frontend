@@ -126,8 +126,11 @@ const handleSubmit = async () => {
 
 <template>
   <div class="home">
-    <h1 class="main-title">Spelling Game</h1>
-    <h2 class="subtitle">Start a new game</h2>
+    <div class="fixed-header">
+      <h1 class="main-title">Check Your Spelling</h1>
+      <h2 class="subtitle">Select a language to start a new game</h2>
+    </div>
+    <div style="height: 130px"></div>
     
     <div class="language-buttons">
       <button 
@@ -151,61 +154,61 @@ const handleSubmit = async () => {
       Loading...
     </div>
     
-    <!-- Display timer -->
-    <div v-if="timeRemaining !== null" class="timer" :class="{ 'warning': timeRemaining < 30 }">
-      Time remaining: {{ Math.floor(timeRemaining / 60) }}:{{ (timeRemaining % 60).toString().padStart(2, '0') }}
-    </div>
-
-    <!-- Display words after API call -->
-    <div v-if="words.length > 0" class="words-list">
-      <div v-for="word in words" :key="word.id" class="word-item">
-        <p>{{ word.description }}</p>
-        <p>Characters: {{ word.charcount }}</p>
-
-        <div class="audio-container">
-          <audio
-            :src="word.url"
-            controls
-            class="audio-player"
-            @error="handleAudioError"
-          >
-            Your browser does not support the audio element.
-          </audio>
-        </div>
-          <div class="input-container" :data-word-id="word.id" :class="{
-            'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
-            'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
-          }">
-            <div class="input-container" :data-word-id="word.id">
-            <input
-              v-for="index in word.charcount"
-              :key="index"
-              type="text"
-              maxlength="1"
-              class="letter-input"
-              @keyup="handleInput($event, index, word.id)"
-              @input="enforceMaxLength($event.target)"
-              :disabled="isSubmitted"
-            >
-            <span v-if="isSubmitted" class="result-text">
-              {{ results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
-              <span class="original-word" v-if="!results.find(r => r.id === word.id)?.correct">
-                ({{ results.find(r => r.id === word.id)?.original_word }})
-              </span>
-            </span>
-          </div>
-        </div>
+    <div class="questions-container">
+      <!-- Display timer -->
+      <div v-if="timeRemaining !== null" class="timer" :class="{ 'warning': timeRemaining < 30 }">
+        Time remaining: {{ Math.floor(timeRemaining / 60) }}:{{ (timeRemaining % 60).toString().padStart(2, '0') }}
       </div>
 
-      <!-- Single submit button outside the word loop -->
-      <div class="submit-container">
-        <button 
-            class="submit-btn"
-            @click="handleSubmit"
-            :disabled="isLoading || isSubmitted"
-          >
-            {{ isSubmitted ? 'Submitted' : 'Submit Answers' }}
-          </button>
+      <!-- Display words after API call -->
+      <div v-if="words.length > 0" class="words-list">
+        <div v-for="word in words" :key="word.id" class="word-item">
+          <div class="audio-container">
+            <audio
+              :src="word.url"
+              controls
+              class="audio-player"
+              @error="handleAudioError"
+            >
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+          <p>{{ word.description }}</p>
+            <div class="input-container" :data-word-id="word.id" :class="{
+              'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
+              'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
+            }">
+              <div class="input-container" :data-word-id="word.id">
+              <input
+                v-for="index in word.charcount"
+                :key="index"
+                type="text"
+                maxlength="1"
+                class="letter-input"
+                @keyup="handleInput($event, index, word.id)"
+                @input="enforceMaxLength($event.target)"
+                :disabled="isSubmitted"
+              >
+              <div v-if="isSubmitted" class="result-text">
+                {{ results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
+                <span class="original-word" v-if="!results.find(r => r.id === word.id)?.correct">
+                  ({{ results.find(r => r.id === word.id)?.original_word }})
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Single submit button outside the word loop -->
+        <div class="submit-container">
+          <button 
+              class="submit-btn"
+              @click="handleSubmit"
+              :disabled="isLoading || isSubmitted"
+            >
+              {{ isSubmitted ? 'Submitted' : 'Submit Answers' }}
+            </button>
+        </div>
       </div>
     </div>
   </div>
@@ -215,25 +218,42 @@ const handleSubmit = async () => {
 .home {
   text-align: center;
   padding: 2rem;
+  padding-top: 0;
+}
+
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #1a1a1a;
+  padding: 1rem;
+  z-index: 100;
 }
 
 .main-title {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #2c3e50;
+  color: #6189b1;
 }
 
 .subtitle {
   font-size: 1.5rem;
   margin-bottom: 2rem;
-  color: #666;
+  color: #ffffff;
 }
 
 .language-buttons {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-bottom: 2rem;
+  position: fixed;
+  top: 150px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: #1a1a1a;
+  padding: 1rem;
 }
 
 .language-btn {
@@ -262,15 +282,26 @@ const handleSubmit = async () => {
 }
 
 .words-list {
+  top: 550px;
   max-width: 600px;
   margin: 0 auto;
 }
 
 .word-item {
-  background-color: #525252;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
+  background-color: #fff;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.word-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .audio-container {
@@ -286,8 +317,9 @@ const handleSubmit = async () => {
 
 .input-container {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  justify-content: center;
+  align-items: center;
   margin: 1rem 0;
 }
 
@@ -296,7 +328,7 @@ const handleSubmit = async () => {
   height: 40px;
   text-align: center;
   font-size: 1.2rem;
-  border: 2px solid #42b883;
+  border: 2px solid #5884ec;
   border-radius: 4px;
   outline: none;
 }
@@ -386,4 +418,10 @@ const handleSubmit = async () => {
   100% { opacity: 1; }
 }
 
+.questions-container {
+    position: absolute;
+    top: 250px;
+    left: 0;
+    right: 0;
+}
 </style>
