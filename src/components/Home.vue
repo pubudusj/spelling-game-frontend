@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import ResultOverlay from './ResultOverlay.vue'
 
 const words = ref([])
+const userInputs = ref({})
 const isLoading = ref(false)
 // Use baseUrl from the environment variables
 const baseUrl = import.meta.env.VITE_API_BASE_URL
@@ -42,7 +43,10 @@ const fetchWords = async (language) => {
       body: JSON.stringify({ language })
     })
     const data = await response.json()
-    words.value = data['questions']
+    words.value = data['questions'].map(q => ({
+      ...q,
+      userInput: ''
+    }))
     startTimer(data['questions'].length) // Start timer when questions are loaded
   } catch (error) {
     console.error('Error fetching words:', error)
@@ -70,8 +74,10 @@ const handleAudioError = (event) => {
 }
 
 const handleWordInput = (event, wordId) => {
-  // No need for special input handling anymore
-  // The input will automatically limit to maxlength characters
+  const word = words.value.find(w => w.id === wordId)
+  if (word) {
+    word.userInput = event.target.value
+  }
 }
 
 // Function to collect answers from inputs
@@ -170,13 +176,19 @@ const handleSubmit = async () => {
               'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
             }">
               <div class="input-container" :data-word-id="word.id">
-              <input
-                type="text"
-                class="word-input"
-                :maxlength="word.charcount"
-                @input="handleWordInput($event, word.id)"
-                :disabled="isSubmitted"
-              >
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  class="word-input"
+                  :maxlength="word.charcount"
+                  @input="handleWordInput($event, word.id)"
+                  :disabled="isSubmitted"
+                  v-model="word.userInput"
+                >
+                <span class="char-count" :class="{ 'incomplete': !word.userInput || word.userInput.length < word.charcount }">
+                  {{ word.userInput ? word.userInput.length : 0 }}/{{ word.charcount }}
+                </span>
+              </div>
               <div v-if="isSubmitted" class="result-text">
                 {{ results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
                 <span class="original-word" v-if="!results.find(r => r.id === word.id)?.correct">
@@ -327,6 +339,11 @@ const handleSubmit = async () => {
   margin: 0.25rem 0;
 }
 
+.input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .word-input {
   height: 40px;
   text-align: center;
@@ -337,6 +354,19 @@ const handleSubmit = async () => {
   letter-spacing: 1ch;
   font-size: 24px;
   width: 30ch;
+}
+
+.char-count {
+  position: absolute;
+  right: -60px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #4CAF50;
+}
+
+.char-count.incomplete {
+  color: #F44336;
 }
 
 .word-input:focus {
