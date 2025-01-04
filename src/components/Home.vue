@@ -66,35 +66,19 @@ const handleAudioError = (event) => {
   console.error('Error loading audio:', event)
 }
 
-const handleInput = (event, index, wordId) => {
-  const inputs = event.target.parentElement.getElementsByTagName('input')
-  if (event.target.value.length >= 1) {
-    // Move to next input if available
-    if (index < inputs.length) {
-      inputs[index]?.focus()
-    }
-  } else if (event.key === 'Backspace' && index > 1) {
-    // Move to previous input on backspace
-    inputs[index - 2]?.focus()
-  }
-}
-
-const enforceMaxLength = (input) => {
-  if (input.value.length > 1) {
-    input.value = input.value.slice(0, 1)
-  }
+const handleWordInput = (event, wordId) => {
+  // No need for special input handling anymore
+  // The input will automatically limit to maxlength characters
 }
 
 // Function to collect answers from inputs
 const collectAnswers = () => {
   return words.value.map(word => {
     const inputContainer = document.querySelector(`[data-word-id="${word.id}"]`)
-    const inputs = inputContainer?.getElementsByTagName('input')
-    const letters = inputs ? Array.from(inputs).map(input => input.value).join('') : ''
-    
+    const input = inputContainer?.getElementsByTagName('input')[0]
     return {
       id: word.id,
-      word: letters
+      word: input?.value || ''
     }
   })
 }
@@ -173,20 +157,17 @@ const handleSubmit = async () => {
               Your browser does not support the audio element.
             </audio>
           </div>
-          <p>{{ word.description }}</p>
+          <p>Meaning: {{ word.description }}</p>
             <div class="input-container" :data-word-id="word.id" :class="{
               'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
               'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
             }">
               <div class="input-container" :data-word-id="word.id">
               <input
-                v-for="index in word.charcount"
-                :key="index"
                 type="text"
-                maxlength="1"
-                class="letter-input"
-                @keyup="handleInput($event, index, word.id)"
-                @input="enforceMaxLength($event.target)"
+                class="word-input"
+                :maxlength="word.charcount"
+                @input="handleWordInput($event, word.id)"
                 :disabled="isSubmitted"
               >
               <div v-if="isSubmitted" class="result-text">
@@ -289,8 +270,8 @@ const handleSubmit = async () => {
 
 .word-item {
   background-color: #fff;
-  padding: 2rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
   border-radius: 12px;
   max-width: 800px;
   margin-left: auto;
@@ -305,7 +286,7 @@ const handleSubmit = async () => {
 }
 
 .audio-container {
-  margin: 1rem 0;
+  margin: 0.25rem 0;
 }
 
 .audio-player {
@@ -318,22 +299,24 @@ const handleSubmit = async () => {
 .input-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   align-items: center;
-  margin: 1rem 0;
+  margin: 0.25rem 0;
 }
 
-.letter-input {
-  width: 40px;
+.word-input {
   height: 40px;
   text-align: center;
-  font-size: 1.2rem;
-  border: 2px solid #5884ec;
+  border: 1.5px solid #656565;
   border-radius: 4px;
   outline: none;
+  padding: 0 10px;
+  letter-spacing: 1ch;
+  font-size: 24px;
+  width: 30ch;
 }
 
-.letter-input:focus {
+.word-input:focus {
   border-color: #3aa876;
   box-shadow: 0 0 5px rgba(66, 184, 131, 0.5);
 }
