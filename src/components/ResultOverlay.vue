@@ -1,5 +1,8 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+import ConfettiEffect from './ConfettiEffect.vue'
+
+const props = defineProps({
   totalQuestions: {
     type: Number,
     required: true
@@ -14,11 +17,18 @@ defineProps({
   }
 })
 
+const isPerfectScore = computed(() => {
+  const result = props.correctCount === props.totalQuestions
+  // console.log('isPerfectScore computed:', result, 'correctCount:', props.correctCount, 'total:', props.totalQuestions) // Debug log
+  return result
+})
+
 const emit = defineEmits(['close'])
 </script>
 
 <template>
   <div v-if="isVisible" class="overlay">
+    <ConfettiEffect v-if="isPerfectScore" :active="true" />
     <div class="overlay-content">
       <h2>Quiz Results</h2>
       <p class="result-summary">
@@ -37,11 +47,11 @@ const emit = defineEmits(['close'])
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 99000;
 }
 
 .overlay-content {
