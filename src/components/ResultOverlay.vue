@@ -30,7 +30,7 @@ const emit = defineEmits(['close'])
   <div v-if="isVisible" class="overlay">
     <ConfettiEffect v-if="isPerfectScore" :active="true" />
     <div class="overlay-content">
-      <h2>Quiz Results</h2>
+      <h2>Your Results</h2>
       <p class="result-summary">
         You got <span class="correct-count">{{ correctCount }}</span> out of 
         <span class="total-count">{{ totalQuestions }}</span> questions correct!

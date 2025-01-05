@@ -12,12 +12,12 @@ const results = ref([])
 const isSubmitted = ref(false)
 const timeRemaining = ref(null)
 const timer = ref(null)
-const TIME_PER_QUESTION = 10
+const TIME_PER_QUESTION_SECONDS = 10
+const MAX_TOTAL_TIME_SECONDS = 10
 const showResultOverlay = ref(false)
 
 const startTimer = (questionCount) => {
-  // Allow seconds per question, max 90 seconds
-  const totalSeconds = Math.min(90, questionCount * TIME_PER_QUESTION)
+  const totalSeconds = Math.min(MAX_TOTAL_TIME_SECONDS, questionCount * TIME_PER_QUESTION_SECONDS)
   timeRemaining.value = totalSeconds
   
   timer.value = setInterval(() => {
@@ -192,7 +192,7 @@ const handleSubmit = async () => {
               <div v-if="isSubmitted" class="result-text">
                 {{ results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
                 <span class="original-word" v-if="!results.find(r => r.id === word.id)?.correct">
-                  ({{ results.find(r => r.id === word.id)?.original_word }})
+                  ({{ results.find(r => r.id === word.id)?.original_word.toLowerCase() }})
                 </span>
               </div>
             </div>
@@ -436,7 +436,7 @@ const handleSubmit = async () => {
 .timer {
   font-size: 1.5rem;
   margin: 1rem 0;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
   background-color: #42b883;
   color: white;
   border-radius: 4px;
