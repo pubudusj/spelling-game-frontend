@@ -164,8 +164,8 @@ const handleSubmit = async () => {
       <!-- Display words after API call -->
       <div v-if="words.length > 0" class="words-list">
         <div v-for="word in words" :key="word.id" class="word-item" :class="{
-            'correct': isSubmitted && results.find(r => r.id === word.id) && results.find(r => r.id === word.id)?.correct,
-            'incorrect': isSubmitted && results.find(r => r.id === word.id) && !results.find(r => r.id === word.id)?.correct
+            'correct': isSubmitted && results.length > 0 && results.find(r => r.id === word.id) && results.find(r => r.id === word.id)?.correct,
+            'incorrect': isSubmitted && results.length > 0 && results.find(r => r.id === word.id) && !results.find(r => r.id === word.id)?.correct
           }">
           <div class="audio-container">
             <audio
@@ -180,8 +180,8 @@ const handleSubmit = async () => {
           <p><span class="meaning">Meaning:</span> {{ word.description }}</p>
           <p><span class="charcount">Characters:</span> {{ word.charcount }}</p>
             <div class="input-container" :data-word-id="word.id" :class="{
-              'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
-              'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct
+              'correct': isSubmitted && results.length > 0 && results.find(r => r.id === word.id) && results.find(r => r.id === word.id)?.correct,
+              'incorrect': isSubmitted && results.length > 0 && results.find(r => r.id === word.id) && !results.find(r => r.id === word.id)?.correct
             }">
               <div class="input-container" :data-word-id="word.id">
               <div class="input-wrapper">
@@ -197,8 +197,8 @@ const handleSubmit = async () => {
                   {{ word.userInput ? word.userInput.length : 0 }}/{{ word.charcount }}
                 </span>
               </div>
-              <div v-if="isSubmitted" class="result-text">
-                {{ results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
+              <div v-if="isSubmitted && results.length > 0 && results.find(r => r.id === word.id)" class="result-text">
+                {{  results.find(r => r.id === word.id)?.correct ? 'Correct!' : 'Incorrect' }}
                 <span class="original-word" v-if="!results.find(r => r.id === word.id)?.correct">
                   ({{ results.find(r => r.id === word.id)?.original_word.toLowerCase() }})
                 </span>
