@@ -13,7 +13,7 @@ const isSubmitted = ref(false)
 const timeRemaining = ref(null)
 const timer = ref(null)
 const TIME_PER_QUESTION_SECONDS = 10
-const MAX_TOTAL_TIME_SECONDS = 10
+const MAX_TOTAL_TIME_SECONDS = 90
 const showResultOverlay = ref(false)
 
 const startTimer = (questionCount) => {
@@ -24,7 +24,7 @@ const startTimer = (questionCount) => {
     if (timeRemaining.value > 0) {
       timeRemaining.value--
     } else {
-      if (!isSubmitted.value) {
+      if (!isSubmitted.value) {   
         handleSubmit() // Auto-submit if not already submitted
       }
       clearInterval(timer.value)
@@ -43,6 +43,10 @@ const fetchWords = async (language) => {
       body: JSON.stringify({ language })
     })
     const data = await response.json()
+    if (!data['questions'] || data['questions'].length === 0) {
+      words.value = []
+      return
+    }
     words.value = data['questions'].map(q => ({
       ...q,
       userInput: ''
@@ -148,6 +152,10 @@ const handleSubmit = async () => {
     <div v-if="isLoading" class="loading">
       Generating questions...
     </div>
+    <!-- Display message when no questions available -->
+    <div v-if="!isLoading && selectedLanguage && words.length === 0" class="no-questions">
+      No questions generated. Please try again.
+    </div>
       <!-- Display timer -->
       <div v-if="timeRemaining !== null" class="timer" :class="{ 'warning': timeRemaining < 30 }">
         Time remaining: {{ Math.floor(timeRemaining / 60) }}:{{ (timeRemaining % 60).toString().padStart(2, '0') }}
@@ -156,8 +164,8 @@ const handleSubmit = async () => {
       <!-- Display words after API call -->
       <div v-if="words.length > 0" class="words-list">
         <div v-for="word in words" :key="word.id" class="word-item" :class="{
-            'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
-            'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct
+            'correct': isSubmitted && results.find(r => r.id === word.id) && results.find(r => r.id === word.id)?.correct,
+            'incorrect': isSubmitted && results.find(r => r.id === word.id) && !results.find(r => r.id === word.id)?.correct
           }">
           <div class="audio-container">
             <audio
@@ -173,7 +181,7 @@ const handleSubmit = async () => {
           <p><span class="charcount">Characters:</span> {{ word.charcount }}</p>
             <div class="input-container" :data-word-id="word.id" :class="{
               'correct': isSubmitted && results.find(r => r.id === word.id)?.correct,
-              'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct 
+              'incorrect': isSubmitted && !results.find(r => r.id === word.id)?.correct
             }">
               <div class="input-container" :data-word-id="word.id">
               <div class="input-wrapper">
@@ -287,6 +295,15 @@ const handleSubmit = async () => {
   color: #666;
   text-align: center;
   width: 100%;
+}
+
+.no-questions {
+  margin-top: 1rem;
+  color: #ff4444;
+  text-align: center;
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 1rem;
 }
 
 .words-list {
