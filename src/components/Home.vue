@@ -125,7 +125,7 @@ const handleSubmit = async () => {
 <template>
   <div class="home">
     <div class="fixed-header">
-      <h1 class="main-title">Check Your Spelling</h1>
+      <h1 class="main-title">&star; Spelling Master &star;</h1>
       <h2 class="subtitle">Select a language to start a new game</h2>
     </div>
     <div style="height: 130px"></div>
@@ -136,7 +136,7 @@ const handleSubmit = async () => {
         @click="handleLanguageSelect('en-US')"
         :disabled="isLoading"
       >
-        English
+        English (US)
       </button>
       <button 
         class="language-btn"
