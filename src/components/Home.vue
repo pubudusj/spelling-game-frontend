@@ -177,8 +177,8 @@ const handleSubmit = async () => {
               Your browser does not support the audio element.
             </audio>
           </div>
-          <p><span class="meaning">Meaning:</span> {{ word.description }}</p>
-          <p><span class="charcount">Characters:</span> {{ word.charcount }}</p>
+          <p class="meaning"><span class="meaning-title">Meaning:</span> {{ word.description }}</p>
+          <p class="charcount"><span class="charcount-title">Characters:</span> {{ word.charcount }}</p>
             <div class="input-container" :data-word-id="word.id" :class="{
               'correct': isSubmitted && results.length > 0 && results.find(r => r.id === word.id) && results.find(r => r.id === word.id)?.correct,
               'incorrect': isSubmitted && results.length > 0 && results.find(r => r.id === word.id) && !results.find(r => r.id === word.id)?.correct
@@ -240,7 +240,7 @@ const handleSubmit = async () => {
   top: 0;
   left: 0;
   right: 0;
-  background-color: #727272;
+  background-color: #1a1a1a;
   padding: 1rem;
   z-index: 100;
 }
@@ -248,7 +248,7 @@ const handleSubmit = async () => {
 .main-title {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #32daa7;
+  color: #6189b1;
 }
 
 .subtitle {
@@ -266,7 +266,7 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   z-index: 100;
-  background-color: #727272;
+  background-color: #1a1a1a;
   padding: 1rem;
 }
 
@@ -485,10 +485,18 @@ const handleSubmit = async () => {
 }
 
 .meaning {
+  color: #000;
+}
+
+.meaning-title {
   font-weight: bold;
 }
 
 .charcount {
+  color: #000;
+}
+
+.charcount-title {
   font-weight: bold;
 }
 </style>

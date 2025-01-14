@@ -72,6 +72,7 @@ h2 {
 .result-summary {
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
+  color: #000;
 }
 
 .correct-count {
