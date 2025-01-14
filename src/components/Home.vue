@@ -240,7 +240,7 @@ const handleSubmit = async () => {
   top: 0;
   left: 0;
   right: 0;
-  background-color: #1a1a1a;
+  background-color: #727272;
   padding: 1rem;
   z-index: 100;
 }
@@ -248,7 +248,7 @@ const handleSubmit = async () => {
 .main-title {
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #6189b1;
+  color: #32daa7;
 }
 
 .subtitle {
@@ -266,7 +266,7 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   z-index: 100;
-  background-color: #1a1a1a;
+  background-color: #727272;
   padding: 1rem;
 }
 
